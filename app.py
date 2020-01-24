@@ -1,4 +1,3 @@
-import sys
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 from bigchaindb_driver import BigchainDB
@@ -62,6 +61,11 @@ class Query(Resource):
             user_update = User()
             user_update.public_key = user_public_key
             user_update.private_key = user_private_key
+            try:
+                Asset.get_id_by_alias(params['current_alias'])
+            except InvalidAliasException:
+                return "No alias found to update", 400
+
             Asset.transfer_asset()
 
         except:

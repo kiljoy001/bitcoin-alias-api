@@ -104,4 +104,7 @@ class Asset:
         search_result = Asset.Bdb.metadata.get(search=alias)
         # get transaction id
         transaction_id = search_result[0]['id']
-        return transaction_id
+        if len(transaction_id) > 0:
+            return transaction_id
+        else:
+            raise InvalidAliasException
