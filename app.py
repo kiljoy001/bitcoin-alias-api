@@ -26,18 +26,11 @@ class Query(Resource):
         # TODO: Need to change this part to accept a signed transaction from the client. This setup is wrong / dangerous
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument('alias')
-            parser.add_argument('bitcoin_address')
+            parser.add_argument('signed_transaction')
             params = parser.parse_args()
-            new_user = User()
-            new_user.set_bitcoin_address_and_alias(params['alias'], params['bitcoin_address'])
-            new_asset = Asset(new_user)
-            transaction_id = new_asset.create_asset()
-            keys = new_user.show_keys()
+            transaction_id = self.bdb.transactions.send_commit(params['signed_transaction'])
             json_return = {
-                'txid': transaction_id,
-                'public_key': keys[0],
-                'private_key': keys[1]
+                'txid': transaction_id['metadata'],
             }
             return json_return, 201
 
