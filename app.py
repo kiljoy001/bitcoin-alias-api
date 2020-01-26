@@ -6,7 +6,6 @@ from Asset_Handling.create_user import User
 from Asset_Handling.asset_template import Asset
 from Asset_Handling.exceptions import InvalidAliasException
 
-
 app = Flask(__name__)
 api = Api(app)
 settings = AppSettings.get_settings()
@@ -24,6 +23,7 @@ class Query(Resource):
             return "No results", 404
 
     def post(self):
+        # TODO: Need to change this part to accept a signed transaction from the client. This setup is wrong / dangerous
         try:
             parser = reqparse.RequestParser()
             parser.add_argument('alias')
@@ -47,26 +47,12 @@ class Query(Resource):
         except InvalidAliasException:
             return "Alias already exists!", 400
 
-
     def update(self):
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument('public_key')
-            parser.add_argument('private_key')
-            parser.add_argument('current_alias')
-            parser.add_argument('updated_alias')
+            parser.add_argument('signed_transaction')
             params = parser.parse_args()
-            user_public_key = params['public_key']
-            user_private_key = params['private_key']
-            user_update = User()
-            user_update.public_key = user_public_key
-            user_update.private_key = user_private_key
-            try:
-                Asset.get_id_by_alias(params['current_alias'])
-            except InvalidAliasException:
-                return "No alias found to update", 400
-
-            Asset.transfer_asset()
+            self.bdb.transactions.send_commit(params['signed_transaction'])
 
         except:
             pass

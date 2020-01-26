@@ -42,3 +42,5 @@ class CreateUserTests(TestCase, ABC):
         self.assertTrue(self.fresh_user.Alias == 'John Q. Public')
         self.assertFalse(self.fresh_user.BitcoinAddress == '1Ab4wcaZ7wZDLJ8rgjX9UZwcXs2mWRW8')
         self.assertFalse(self.fresh_user.KeyPair is None)
+
+# TODO Add tests for creating assets, checking if asset was properly created

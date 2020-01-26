@@ -26,7 +26,7 @@ class Asset:
         return base58.b58encode(blake_hash).decode()
 
     @staticmethod
-    def transfer_asset(public_key: User, owners_private_key: User, transaction_id: str,
+    def transfer_asset(public_key: str, owners_private_key: str, transaction_id: str,
                        new_alias: str = None) -> None:
         # Update asset with new alias#
         creation_tx = Asset.Bdb.transactions.retrieve(transaction_id)

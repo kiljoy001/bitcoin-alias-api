@@ -6,16 +6,12 @@ class User:
 
     """
     Creates a user object that joins the alias and bitcoin address.
-    Please use set_bitcoin_address_and_alias method instead of setting the
-    properties directly
     """
 
     def __init__(self):
         self.KeyPair = None
         self.BitcoinAddress = None
         self.Alias = None
-        self.public_key = None
-        self.private_key = None
 
     def generate_keys(self):
         # Create key pair if none exists
