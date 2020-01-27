@@ -1,7 +1,6 @@
 import hashlib
 import base58
 from bigchaindb_driver import BigchainDB
-from .create_user import User
 from ..settings import AppSettings
 from .exceptions import InvalidAliasException
 
@@ -13,15 +12,27 @@ class Asset:
     Bdb = BigchainDB(URL['bigchainurl'])
 
     def __init__(self, user):
-        self.User = user
-        self.Asset_Hash = None
-        self.bitcoin_address_asset_data = dict(data={
+        self.__User = user
+        self.__Asset_Hash = None
+        self.__bitcoin_address_asset_data = dict(data={
             'asset_hash': self.get_hash(),
-            'bitcoin_address': self.User.BitcoinAddress
+            'bitcoin_address': self.user().BitcoinAddress
         })
 
+    @property
+    def user(self):
+        return self.__User
+
+    @property
+    def asset_hash(self):
+        return self.__Asset_Hash
+
+    @property
+    def asset_data(self):
+        return self.__bitcoin_address_asset_data
+
     def get_hash(self):
-        data = self.User.BitcoinAddress + self.User.Alias
+        data = self.user().BitcoinAddress + self.user().Alias
         blake_hash = hashlib.blake2b(data.encode()).hexdigest()
         return base58.b58encode(blake_hash).decode()
 
@@ -81,15 +92,15 @@ class Asset:
             # Create an asset
             prepared_creation_tx = Asset.Bdb.transactions.prepare(
                 operation='CREATE',
-                signers=self.User.KeyPair.public_key,
-                asset=self.bitcoin_address_asset_data,
-                metadata={'updated_alias': self.User.Alias}
+                signers=self.user().KeyPair.public_key,
+                asset=self.asset_data(),
+                metadata={'updated_alias': self.user().Alias}
             )
 
             # Sign transaction with private key
             signed_transaction = Asset.Bdb.transactions.fulfill(
                 prepared_creation_tx,
-                private_keys=self.User.KeyPair.private_key
+                private_keys=self.user().KeyPair.private_key
             )
 
             # Send transaction to BigchainDb node

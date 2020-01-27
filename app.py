@@ -32,6 +32,7 @@ class Query(Resource):
             json_return = {
                 'txid': transaction_id['metadata'],
             }
+
             return json_return, 201
 
         except ValueError:
@@ -40,6 +41,7 @@ class Query(Resource):
         except InvalidAliasException:
             return "Alias already exists!", 400
 
+    @property
     def update(self):
         try:
             parser = reqparse.RequestParser()
@@ -48,4 +50,4 @@ class Query(Resource):
             self.bdb.transactions.send_commit(params['signed_transaction'])
 
         except:
-            pass
+            return "Transaction error!", 400
