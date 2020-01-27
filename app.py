@@ -39,9 +39,11 @@ class Query(Resource):
             return json_return, 201
 
         except ValueError:
+            # Todo: change to json
             return "Value error", 400
 
         except InvalidAliasException:
+            # Todo: change to json
             return "Alias already exists!", 400
 
     # Todo: this method can be removed, since signed transactions are being accepted, no need to make a special endpoint
@@ -55,8 +57,11 @@ class Query(Resource):
         except:
             return "Transaction error!", 400
 
-#Todo: Warning: Silently ignoring app.run() because the application is run from the flask command line executable.  \
-# Consider putting app.run() behind an if __name__ == "__main__" guard to silence this warning.
+
+# Todo: Warning: Silently ignoring app.run() because the application is run from the flask command line executable.  \
+#  Consider putting app.run() behind an if __name__ == "__main__" guard to silence this warning.
+
+# TODO: Change endpoint from root to /Query
 api.add_resource(Query, '/')
 if settings['debug_on'] == 'True':
     app.run(debug=True)
