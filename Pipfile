@@ -13,6 +13,7 @@ bigchaindb-driver = "*"
 base58 = "*"
 flask-testing = "*"
 pyyaml = "*"
+flask-jwt = "*"
 
 [requires]
 python_version = "3.6"
