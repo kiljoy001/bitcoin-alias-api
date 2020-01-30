@@ -3,7 +3,8 @@ from flask import Flask
 from flask_restful import Api, Resource, reqparse
 from bigchaindb_driver import BigchainDB
 from settings import AppSettings
-from flask_jwt import JWT, jwt_required, current_identity
+# from flask_jwt import JWT, jwt_required, current_identity
+# from werkzeug.security import safe_str_cmp
 
 sys.path.append('./Asset_Handling/')
 from Asset_Handling.exceptions import InvalidAliasException
@@ -11,6 +12,14 @@ from Asset_Handling.exceptions import InvalidAliasException
 app = Flask(__name__)
 api = Api(app)
 settings = AppSettings.get_settings()
+# class ApiUser(object):
+#
+#     def __init__(self, asset):
+#         self.id - asset.transaction_id
+#         self.username = asset.username
+#         self.password = asset.password
+
+
 app.secret_key = settings['secret_key']
 
 
@@ -18,7 +27,7 @@ class Query(Resource):
     BDB = BigchainDB(settings['bigchainurl'])
 
     # TODO: add jwt auth to this
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('alias')
@@ -43,6 +52,9 @@ class Query(Resource):
 
         except InvalidAliasException:
             return {'result': "Alias already exists!"}, 400
+
+# def authenticate(username, password):
+
 
 
 api.add_resource(Query, '/Query')

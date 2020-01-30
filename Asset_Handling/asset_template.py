@@ -1,7 +1,8 @@
-import hashlib
-import base58
+# import hashlib
+# import base58
+# import bcrypt
 from bigchaindb_driver import BigchainDB
-from ..settings import AppSettings
+from settings import AppSettings
 from .exceptions import InvalidAliasException
 
 
@@ -11,30 +12,25 @@ class Asset:
     URL = AppSettings.get_settings()
     Bdb = BigchainDB(URL['bigchainurl'])
 
-    def __init__(self, user):
-        self.__User = user
-        self.__Asset_Hash = None
-        self.__bitcoin_address_asset_data = dict(data={
-            'asset_hash': self.get_hash(),
-            'bitcoin_address': self.user().BitcoinAddress
+    def __init__(self, address, public_key, private_key, user_alias):
+        self.address = address
+        self.pub_key = public_key
+        self.prv_key = private_key
+        self.alias = user_alias
+        self._bitcoin_address_asset_data = dict(data={
+            'bitcoin_address': self.address
         })
 
     @property
-    def user(self):
-        return self.__User
-
-    @property
-    def asset_hash(self):
-        return self.__Asset_Hash
-
-    @property
     def asset_data(self):
-        return self.__bitcoin_address_asset_data
+        return self._bitcoin_address_asset_data
 
-    def get_hash(self):
-        data = self.user().BitcoinAddress + self.user().Alias
-        blake_hash = hashlib.blake2b(data.encode()).hexdigest()
-        return base58.b58encode(blake_hash).decode()
+    @ asset_data.setter
+    def asset_data(self, value):
+        if value is not None:
+            self._bitcoin_address_asset_data = value
+        else:
+            raise ValueError
 
     @staticmethod
     def transfer_asset(public_key: str, owners_private_key: str, transaction_id: str,
@@ -50,7 +46,7 @@ class Asset:
         if new_alias is None:
             metadata = creation_tx['metadata']
         else:
-            metadata = {'updated_alias': new_alias}
+            metadata = {'alias_name': new_alias}
 
         # Transfer Data#
         output_index = 0
@@ -83,39 +79,34 @@ class Asset:
 
     def create_asset(self):
         # check alias uniqueness
-        if len(self.Bdb.metadata.get(search=self.User.Alias)) > 0:
+        if len(self.Bdb.metadata.get(search=self.alias)) > 0:
             raise InvalidAliasException
         else:
-            # Prepare blake2b hash property#
-            self.Asset_Hash = self.get_hash()
-
             # Create an asset
             prepared_creation_tx = Asset.Bdb.transactions.prepare(
                 operation='CREATE',
-                signers=self.user().KeyPair.public_key,
-                asset=self.asset_data(),
-                metadata={'updated_alias': self.user().Alias}
+                signers=self.pub_key,
+                asset=self._bitcoin_address_asset_data,
+                metadata={'alias_name': self.alias}
             )
 
             # Sign transaction with private key
             signed_transaction = Asset.Bdb.transactions.fulfill(
                 prepared_creation_tx,
-                private_keys=self.user().KeyPair.private_key
+                private_keys=self.prv_key
             )
+            return signed_transaction
 
-            # Send transaction to BigchainDb node
-            sent_token = Asset.Bdb.transactions.send_commit(signed_transaction)
-
-            # Return TxId
-            return sent_token['id']
-
-    @staticmethod
-    def get_id_by_alias(alias):
+    def get_id_by_alias(self, alias):
         # get alias results
         search_result = Asset.Bdb.metadata.get(search=alias)
         # get transaction id
-        transaction_id = search_result[0]['id']
-        if len(transaction_id) > 0:
-            return transaction_id
-        else:
-            raise InvalidAliasException
+        return search_result[0]['id']
+
+
+# class ApiUserAsset(Asset):
+#     def __init__(self, username, password):
+#         self.asset_data = {'data': {
+#             'username': username,
+#         }}
+#         self.metadata = {'password': bcrypt.hashpw(password, bcrypt.gensalt())}

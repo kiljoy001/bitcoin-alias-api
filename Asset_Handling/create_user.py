@@ -8,10 +8,10 @@ class User:
     Creates a user object that joins the alias and bitcoin address.
     """
 
-    def __init__(self):
-        self.KeyPair = None
-        self.BitcoinAddress = None
-        self.Alias = None
+    def __init__(self, alias):
+        self.KeyPair = generate_keypair()
+        self.BitcoinAddress = ''
+        self.Alias = alias
 
     def generate_keys(self):
         # Create key pair if none exists
@@ -28,12 +28,10 @@ class User:
         self.public_key = public_key
         self.private_key = private_key
 
-    def set_bitcoin_address_and_alias(self, alias, bitcoin_address):
+    def set_bitcoin_address(self, bitcoin_address):
         # Set the bitcoin address and alias
         check_if_valid = Checker(bitcoin_address)
         if check_if_valid.check_address():
             self.BitcoinAddress = bitcoin_address
-            self.Alias = alias
-            self.generate_keys()
         else:
             return ValueError
