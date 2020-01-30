@@ -3,7 +3,7 @@
 # import bcrypt
 from bigchaindb_driver import BigchainDB
 from settings import AppSettings
-from .exceptions import InvalidAliasException
+from .exceptions import InvalidAliasException, DuplicateAliasException
 
 
 class Asset:
@@ -100,9 +100,21 @@ class Asset:
     def get_id_by_alias(self, alias):
         # get alias results
         search_result = Asset.Bdb.metadata.get(search=alias)
-        # get transaction id
-        return search_result[0]['id']
+        # sanity check - should be only one result
+        if len(search_result) == 1:
+            # get transaction id
+            return search_result[0]['id']
+        elif len(search_result) == 0:
+            return search_result
+        else:
+            # raise hell
+            raise DuplicateAliasException
 
+    def get_bitcoin_address_by_alias(self, alias):
+        # get transaction id from alias
+        transaction_id = self.get_id_by_alias(alias)
+        search_result = Asset.Bdb.transactions.get(asset_id=transaction_id, operation='CREATE')
+        return search_result[0]['asset']['data']['bitcoin_address']
 
 # class ApiUserAsset(Asset):
 #     def __init__(self, username, password):

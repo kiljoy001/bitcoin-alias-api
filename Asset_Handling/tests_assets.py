@@ -2,6 +2,11 @@ from abc import ABC
 from flask_testing import TestCase
 from .bitcoin_address_format_checker import Checker
 from .create_user import User
+from settings import AppSettings
+from bigchaindb_driver import BigchainDB
+from .asset_template import Asset
+
+app_settings = AppSettings.get_settings()
 
 
 class FormatCheckerTests(TestCase, ABC):
@@ -31,16 +36,29 @@ class FormatCheckerTests(TestCase, ABC):
 
 
 class CreateUserTests(TestCase, ABC):
+    BDB = BigchainDB(app_settings['bigchainurl'])
 
     def setUp(self):
-        self.fresh_user = User()
-        self.fresh_user.Alias = 'John Q. Public'
-        self.fresh_user.BitcoinAddress = '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8'
-        self.fresh_user.KeyPair = self.fresh_user.generate_keys()
+        self.user1 = User('John Q. Public', '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8')
 
     def test_user_properties(self):
-        self.assertTrue(self.fresh_user.Alias == 'John Q. Public')
-        self.assertFalse(self.fresh_user.BitcoinAddress == '1Ab4wcaZ7wZDLJ8rgjX9UZwcXs2mWRW8')
-        self.assertFalse(self.fresh_user.KeyPair is None)
+        self.assertTrue(self.user1.Alias == 'John Q. Public')
+        self.assertFalse(self.user1.BitcoinAddress == '1Ab4wcaZ7wZDLJ8rgjX9UZwcXs2mWRW8')
+        self.assertFalse(self.user1.KeyPair is None)
 
-# TODO Add tests for creating assets, checking if asset was properly created
+
+class CreateAssetTests(TestCase, ABC):
+    BDB = BigchainDB(app_settings['bigchainurl'])
+
+    def setUp(self) -> None:
+        self.user1 = User('John Q. Public', '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8')
+        self.user2 = User('Betty Anne Brown', '1AVz6VazARMTHgXpSQ3J2trTiAEWFikNT5')
+
+    def test_asset_is_signed(self):
+        # create asset
+        asset = Asset(self.user1.BitcoinAddress, self.user1.KeyPair.public_key, self.user1.KeyPair.private_key,
+                      self.user1.Alias)
+        signed_asset = asset.create_asset()
+        self.assertTrue(signed_asset is not None)
+        self.assertTrue(len(signed_asset) > 0)
+
