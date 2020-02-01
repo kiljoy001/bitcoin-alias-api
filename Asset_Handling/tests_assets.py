@@ -53,6 +53,7 @@ class CreateAssetTests(TestCase, ABC):
     def setUp(self) -> None:
         self.user1 = User('John Q. Public', '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8')
         self.user2 = User('Betty Anne Brown', '1AVz6VazARMTHgXpSQ3J2trTiAEWFikNT5')
+        self.user3 = User('Learn-Learn Fruit', '12cfBAvvMQjhgZS2XkxKhrQLCuSin8vkK8')
 
     def test_asset_is_signed(self):
         # create asset
@@ -62,3 +63,19 @@ class CreateAssetTests(TestCase, ABC):
         self.assertTrue(signed_asset is not None)
         self.assertTrue(len(signed_asset) > 0)
 
+    def test_asset_will_transfer(self):
+        asset = Asset(self.user1.BitcoinAddress, self.user1.KeyPair.public_key, self.user1.KeyPair.private_key,
+                      self.user1.Alias)
+        signed_asset = asset.create_asset()
+
+        # send asset
+        on_chain = CreateAssetTests.BDB.transactions.send_commit(signed_asset)
+        transfer1 = asset.transfer_asset(self.user2.KeyPair.public_key, self.user1.KeyPair.private_key,
+                                         asset.get_id_by_alias('John Q. Public'))
+        CreateAssetTests.BDB.transactions.send_commit(transfer1)
+        transfer2 = asset.transfer_asset(self.user3.KeyPair.public_key, self.user2.KeyPair.private_key,
+                                         asset.get_id_by_alias('Betty Anne Brown'))
+        CreateAssetTests.BDB.transactions.send_commit(transfer2)
+
+        self.assertTrue(signed_asset == on_chain)
+       # self.assertTrue()

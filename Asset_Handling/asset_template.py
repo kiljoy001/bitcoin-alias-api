@@ -34,7 +34,7 @@ class Asset:
 
     @staticmethod
     def transfer_asset(public_key: str, owners_private_key: str, transaction_id: str,
-                       new_alias: str = None) -> None:
+                       new_alias: str = None) -> str:
         # Update asset with new alias#
         creation_tx = Asset.Bdb.transactions.retrieve(transaction_id)
         asset_id = creation_tx['id']
@@ -74,8 +74,7 @@ class Asset:
             private_keys=owners_private_key
         )
 
-        # Send to node#
-        Asset.Bdb.transactions.send_commit(fulfilled_transfer_tx)
+        return fulfilled_transfer_tx
 
     def create_asset(self):
         # check alias uniqueness
@@ -95,20 +94,21 @@ class Asset:
                 prepared_creation_tx,
                 private_keys=self.prv_key
             )
+
             return signed_transaction
 
     def get_id_by_alias(self, alias):
         # get alias results
-        search_result = Asset.Bdb.metadata.get(search=alias)
+        return Asset.Bdb.metadata.get(search=alias)
         # sanity check - should be only one result
-        if len(search_result) == 1:
-            # get transaction id
-            return search_result[0]['id']
-        elif len(search_result) == 0:
-            return search_result
-        else:
-            # raise hell
-            raise DuplicateAliasException
+        # if len(search_result) == 1:
+        #     # get transaction id
+        #     return search_result[0]['id']
+        # elif len(search_result) == 0:
+        #     return search_result
+        # else:
+        #     # raise hell
+        #     raise DuplicateAliasException
 
     def get_bitcoin_address_by_alias(self, alias):
         # get transaction id from alias
