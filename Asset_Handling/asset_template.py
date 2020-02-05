@@ -33,7 +33,7 @@ class Asset:
             raise ValueError
 
     @staticmethod
-    def transfer_asset(public_key: str, owners_private_key: str, transaction_id: str,
+    def transfer_asset(sending_to_public_key: str, owners_private_key: str, transaction_id: str,
                        new_alias: str = None) -> str:
         # Update asset with new alias#
         creation_tx = Asset.Bdb.transactions.retrieve(transaction_id)
@@ -64,7 +64,7 @@ class Asset:
             operation='TRANSFER',
             asset=transfer_asset,
             inputs=transfer_input,
-            recipients=public_key,
+            recipients=sending_to_public_key,
             metadata=metadata,
         )
 
@@ -99,7 +99,7 @@ class Asset:
 
     def get_id_by_alias(self, alias):
         # get alias results
-        return Asset.Bdb.metadata.get(search=alias)
+        return Asset.Bdb.metadata.get(search=alias, operation='CREATE')
         # sanity check - should be only one result
         # if len(search_result) == 1:
         #     # get transaction id

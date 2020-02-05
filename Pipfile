@@ -17,6 +17,7 @@ flask-jwt = "*"
 bcrypt = "*"
 ward = "==0.31.0b0"
 hypothesis = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"
