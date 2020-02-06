@@ -56,7 +56,6 @@ class Query(Resource):
 # def authenticate(username, password):
 
 
-
 api.add_resource(Query, '/Query')
 if settings['debug_on'] == 'True':
     if __name__ == "__main__":

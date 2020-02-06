@@ -1,7 +1,4 @@
-from settings import AppSettings
 from .bitcoin_address_format_checker import Checker
-
-app_settings = AppSettings.get_settings()
 
 
 def test_good_address():
@@ -22,8 +19,6 @@ def test_short_address():
 def test_long_address():
     chk = Checker('12Mb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW61AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8')
     assert chk.check_address() is False
-
-
 
 # class FormatCheckerTests(TestCase, ABC):
 #     GOOD_ADDRESS = '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8'
@@ -49,8 +44,8 @@ def test_long_address():
 #     def test_blank_entry(self):
 #         self.chk.update_address(FormatCheckerTests.BLANK)
 #         self.assertFalse(self.chk.check_address())
-
-
+#
+#
 # class CreateUserTests(TestCase, ABC):
 #     BDB = BigchainDB(app_settings['bigchainurl'])
 #
@@ -61,6 +56,8 @@ def test_long_address():
 #         self.assertTrue(self.user1.Alias == 'John Q. Public')
 #         self.assertFalse(self.user1.BitcoinAddress == '1Ab4wcaZ7wZDLJ8rgjX9UZwcXs2mWRW8')
 #         self.assertFalse(self.user1.KeyPair is None)
+#
+#
 
 
 # class CreateAssetTests(TestCase, ABC):
