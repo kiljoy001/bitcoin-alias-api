@@ -1,4 +1,12 @@
+from .asset_template import Asset
 from .bitcoin_address_format_checker import Checker
+from .create_user import User
+from bigchaindb_driver import BigchainDB
+from settings import AppSettings
+from hypothesis import given, settings, Verbosity, assume
+from hypothesis.strategies import text
+
+app_setting = AppSettings.get_settings()
 
 
 def test_good_address():
@@ -19,6 +27,7 @@ def test_short_address():
 def test_long_address():
     chk = Checker('12Mb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW61AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8')
     assert chk.check_address() is False
+
 
 # class FormatCheckerTests(TestCase, ABC):
 #     GOOD_ADDRESS = '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8'
@@ -58,7 +67,53 @@ def test_long_address():
 #         self.assertFalse(self.user1.KeyPair is None)
 #
 #
+@settings(deadline=None)
+@given(text())
+def test_create_asset(strategy):
+    private_key = '855wuFfcwYnS3NqijD9z9yDiBreERpLkBudLyXiwR6K5'
+    public_key = '5cDbUCR38avXsQoZmM5diVvn63epKEr6U9HGE236YkTL'
+    try:
+        asset = Asset('1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8', public_key, private_key, strategy)
+        signed_asset = asset.create_asset()
+        assert signed_asset is not None or len(signed_asset) == 0
+    except ValueError:
+        pass
 
+
+# integration test
+@settings(verbosity=Verbosity.verbose)
+@given(text())
+def test_transfer_asset(strategy):
+    assume(strategy is not '')
+    user1 = User(strategy, '1AMb4wcaZ7wZDLJ8frgjX9UZwcXs2mWRW8')
+    user2 = User(strategy, '1AVz6VazARMTHgXpSQ3J2trTiAEWFikNT5')
+    user3 = User(strategy, '12cfBAvvMQjhgZS2XkxKhrQLCuSin8vkK8')
+    bdb = BigchainDB(app_setting['bigchainurl'])
+    try:
+        asset = Asset(user1.BitcoinAddress, user1.KeyPair.public_key, user1.KeyPair.private_key,
+                      user1.Alias)
+        signed_asset = asset.create_asset()
+        # send asset
+        on_chain = bdb.transactions.send_commit(signed_asset)
+        # first transfer
+        transfer1 = asset.transfer_asset(user2.KeyPair.public_key, user1.KeyPair.private_key,
+                                         asset.get_id_by_alias(user1.Alias))
+        # send on chain (transfer1)
+        transfer_commit1 = bdb.transactions.send_commit(transfer1)
+        transfer2 = asset.transfer_asset(user3.KeyPair.public_key, user2.KeyPair.private_key,
+                                         asset.get_id_by_alias(user2.Alias), 'kill the beat')
+        # send on chain (transfer2)
+        transfer_commit2 = bdb.transactions.send_commit(transfer2)
+
+        # check signed asset is the same as on chain (transaction confirmation)
+        assert signed_asset == on_chain
+        # check if transfer happened
+        assert transfer1 == transfer_commit1
+        assert transfer2 == transfer_commit2
+        # check if alias update works
+        assert asset.get_id_by_alias('kill the beat') == signed_asset['id']
+    except ValueError:
+        pass
 
 # class CreateAssetTests(TestCase, ABC):
 #

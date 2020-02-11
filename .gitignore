@@ -1,1 +1,5 @@
 /settings.yaml
+/.hypothesis/
+/.idea/
+/.vscode/
+/Asset_Handling/.cache/v/cache/lastfailed

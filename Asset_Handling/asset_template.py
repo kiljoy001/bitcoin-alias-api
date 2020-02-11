@@ -10,12 +10,18 @@ class Asset:
     """Creates, and transfer asset for BigChainDb consumption"""
 
     URL = AppSettings.get_settings()
-    Bdb = BigchainDB(URL['bigchainurl'])
+    Bdb = BigchainDB(URL['localhost'])
 
     def __init__(self, address, public_key, private_key, user_alias):
         self.address = address
         self.pub_key = public_key
         self.prv_key = private_key
+
+        if user_alias == '':
+            raise ValueError
+        else:
+            self.alias = user_alias
+
         self.alias = user_alias
         self._bitcoin_address_asset_data = dict(data={
             'bitcoin_address': self.address
@@ -25,7 +31,7 @@ class Asset:
     def asset_data(self):
         return self._bitcoin_address_asset_data
 
-    @ asset_data.setter
+    @asset_data.setter
     def asset_data(self, value):
         if value is not None:
             self._bitcoin_address_asset_data = value
@@ -99,7 +105,7 @@ class Asset:
 
     def get_id_by_alias(self, alias):
         # get alias results
-        return Asset.Bdb.metadata.get(search=alias, operation='CREATE')
+        return Asset.Bdb.metadata.get(search=alias)[0]
         # sanity check - should be only one result
         # if len(search_result) == 1:
         #     # get transaction id
