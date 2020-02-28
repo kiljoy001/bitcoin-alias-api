@@ -1,16 +1,13 @@
-# import hashlib
-# import base58
-# import bcrypt
-from bigchaindb_driver import BigchainDB
-from settings import AppSettings
-from .exceptions import InvalidAliasException, DuplicateAliasException
+import bigchaindb_driver
+import settings
+from . import exceptions
 
 
 class Asset:
     """Creates, and transfer asset for BigChainDb consumption"""
 
-    URL = AppSettings.get_settings()
-    Bdb = BigchainDB(URL['localhost'])
+    URL = settings.AppSettings.get_settings()
+    Bdb = bigchaindb_driver.BigchainDB(URL['localhost'])
 
     def __init__(self, address, public_key, private_key, user_alias):
         self.address = address
@@ -85,7 +82,7 @@ class Asset:
     def create_asset(self):
         # check alias uniqueness
         if len(self.Bdb.metadata.get(search=self.alias)) > 0:
-            raise InvalidAliasException
+            raise exceptions.InvalidAliasException
         else:
             # Create an asset
             prepared_creation_tx = Asset.Bdb.transactions.prepare(
