@@ -9,7 +9,7 @@ class Asset:
     URL = settings.AppSettings.get_settings()
     Bdb = bigchaindb_driver.BigchainDB(URL['localhost'])
 
-    def __init__(self, address, public_key, private_key, user_alias):
+    def __init__(self, address, public_key, private_key, user_alias, data_hash):
         self.address = address
         self.pub_key = public_key
         self.prv_key = private_key
@@ -21,7 +21,7 @@ class Asset:
 
         self.alias = user_alias
         self._bitcoin_address_asset_data = dict(data={
-            'bitcoin_address': self.address
+            'hash': data_hash
         })
 
     @property
