@@ -3,3 +3,5 @@
 /.idea/
 /.vscode/
 /Asset_Handling/.cache/v/cache/lastfailed
+Asset_Handling/__pycache__/
+__pycache__/
